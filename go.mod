@@ -1,4 +1,4 @@
-module GoPan
+module github.com/GodSamaYoo/GodCloud/v1
 
 go 1.15
 
