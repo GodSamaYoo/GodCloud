@@ -19,16 +19,16 @@ jobs:
         go-version: 1.15
 
     - name: Build-amd64
-      run: go build -v ./... -o ./GodCloud_linux_amd64
+      run: go build -v -o GodCloud_liunx_arm main.go
     
     - name: Build-arm
-      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -v ./... -o ./GodCloud_liunx_arm
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -v -o GodCloud_liunx_arm main.go
     
     - name: Build-arm64
-      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -v ./... -o ./GodCloud_liunx_arm64
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -v -o GodCloud_liunx_arm main.go
     
     - name: Build-arm32
-      run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v ./... -o ./GodCloud_windows_amd64
+      run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o GodCloud_liunx_arm main.go
       
     - name: Upload binary files (windows_amd64)
       uses: actions/upload-artifact@v2
