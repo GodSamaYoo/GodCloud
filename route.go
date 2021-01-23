@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	path2 "path"
 	"strings"
 	"time"
 )
@@ -101,7 +102,7 @@ func RegisterRoutes(e *echo.Echo) {
 				AddData(tmp)
 			}
 		}else {
-			_ = os.Mkdir(SavePath, 0777)
+
 			for _, file := range files {
 				// Source
 				src, err := file.Open()
@@ -123,15 +124,23 @@ func RegisterRoutes(e *echo.Echo) {
 					return err
 				}
 
+				DataFileId := md5_(file.Filename+path+string(time.Now().Unix()))
+
 				var tmp PathData
 				tmp.DataSize = int(file.Size/1024)
 				tmp.DataName = file.Filename
 				tmp.DataTime = time.Now().Format("2006-01-02 15:04:05")
-				tmp.DataFileId = md5_(file.Filename+path+string(time.Now().Unix()))
+				tmp.DataFileId = DataFileId
 				tmp.DataType = "file"
 				tmp.DataPath = path
 				tmp.DataEmail = email
 
+				video := []string{".wav", ".avi", ".mov", ".mp4", ".flv", ".rmvb", ".mpeg", ".mpg"}
+				for _,v := range video {
+					if v == path2.Ext(file.Filename) {
+						go videothumbnail(SavePath+file.Filename,DataFileId)
+					}
+				}
 				AddData(tmp)
 
 			}

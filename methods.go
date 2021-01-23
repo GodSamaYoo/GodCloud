@@ -189,7 +189,8 @@ func videothumbnail(videopath string, imgname string) {
 		tmpimg, _ := a.ImageWxH(int64(cuttime*i), 160, 90)
 		draw.Draw(newImg, newImg.Bounds(), tmpimg, image.Pt(-160*i, 0), draw.Over)
 	}
-	imgfile, _ := os.Create(imgname + ".jpg")
+	_ = os.Mkdir("./thumbnail", 0777)
+	imgfile, _ := os.Create("./thumbnail/"+imgname + ".jpg")
 	defer imgfile.Close()
 	jpeg.Encode(imgfile, newImg, &jpeg.Options{100})
 }
