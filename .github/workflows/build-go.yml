@@ -17,39 +17,19 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
+        
+    - name: dependences
+      run: |
+        sudo apt-get -y install autoconf automake build-essential libass-dev libfreetype6-dev libsdl1.2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texi2html zlib1g-dev
+        sudo apt install -y libavdevice-dev libavfilter-dev libswscale-dev libavcodec-dev libavformat-dev libswresample-dev libavutil-dev
+        sudo apt-get install yasm
+        sudo apt-get install ffmpeg
 
-    - name: Build-amd64
-      run: go build -v -o GodCloud_liunx_amd64 ./...
-    
-    - name: Build-arm
-      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -v -o GodCloud_liunx_arm ./...
-    
-    - name: Build-arm64
-      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -v -o GodCloud_liunx_arm64 ./...
-    
-    - name: Build-windows
-      run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -v -o GodCloud_windows_amd64 ./...
-      
-    - name: Upload binary files (windows_amd64)
+    - name: Build-liunx_amd64
+      run: go build -o GodCloud_liunx_amd64 .
+
+    - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
       with:
-        name: Build-windows
-        path: GodCloud_windows_amd64
-
-    - name: Upload binary files (linux_amd64)
-      uses: actions/upload-artifact@v2
-      with:
-        name: Build-amd64
-        path: GodCloud_linux_amd64
-
-    - name: Upload binary files (linux_arm)
-      uses: actions/upload-artifact@v2
-      with:
-        name: Build-arm
-        path: GodCloud_linux_arm
-
-    - name: Upload binary files (linux_arm64)
-      uses: actions/upload-artifact@v2
-      with:
-        name: Build-amd64
-        path: GodCloud_linux_arm64
+        name: Build-liunx_amd64
+        path: GodCloud_liunx_amd64
