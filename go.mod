@@ -16,6 +16,7 @@ require (
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	gitlab.com/opennota/screengen v0.0.0-20191122132138-74a8d677a1a5 // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 	gopkg.in/ini.v1 v1.62.0
 )
