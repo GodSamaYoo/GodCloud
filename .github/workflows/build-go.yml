@@ -27,9 +27,9 @@ jobs:
       run: |
         sudo git clone https://github.com/FFmpeg/FFmpeg.git
         cd FFmpeg
-        ./configure --prefix=$FFMPEG_HOME --enable-static
-        make -j6
-        make install
+        sudo ./configure --prefix=$FFMPEG_HOME --enable-static
+        sudo make -j6
+        sudo make install
 
     - name: Build-liunx_amd64
       run: go build -o GodCloud_liunx_amd64 
