@@ -22,7 +22,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make
+        
     - name: compile FFmpeg
+      run: |
         sudo git clone https://github.com/FFmpeg/FFmpeg.git
         cd FFmpeg
         ./configure --prefix=$FFMPEG_HOME --enable-static
