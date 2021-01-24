@@ -21,12 +21,12 @@ jobs:
     - name: dependences
       run: |
         sudo apt-get update
-        sudo apt-get install yasm gcc automake autoconf libtool make
+        sudo apt-get install yasm gcc automake autoconf libtool make curl
         
     - name: compile FFmpeg
       run: |
-        sudo git clone https://github.com/FFmpeg/FFmpeg.git
-        cd FFmpeg
+        sudo curl https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
+        cd FFmpeg-n4.3.1
         sudo ./configure --prefix=$FFMPEG_HOME --enable-static
         sudo make -j6
         sudo make install
