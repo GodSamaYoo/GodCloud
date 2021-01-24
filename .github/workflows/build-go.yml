@@ -26,6 +26,7 @@ jobs:
     - name: compile FFmpeg
       run: |
         sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
+        tar -xzvf n4.3.1.tar.gz
         cd FFmpeg-n4.3.1
         sudo ./configure --prefix=$FFMPEG_HOME --enable-static
         sudo make -j6
