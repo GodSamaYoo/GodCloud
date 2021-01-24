@@ -21,14 +21,16 @@ jobs:
     - name: dependences
       run: |
         sudo apt-get update
-        sudo apt-get -y install autoconf automake build-essential libass-dev libfreetype6-dev libsdl1.2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texi2html zlib1g-dev
-        sudo apt install -y libavdevice-dev libavfilter-dev libswscale-dev libavcodec-dev libavformat-dev libswresample-dev libavutil-dev
-        sudo apt-get install yasm
-        sudo apt-get install ffmpeg
+        sudo apt-get install yasm gcc automake autoconf libtool make
+    - name: compile FFmpeg
+        sudo git clone https://github.com/FFmpeg/FFmpeg.git
+        cd FFmpeg
+        ./configure --prefix=$FFMPEG_HOME --enable-static
+        make -j6
+        make install
 
     - name: Build-liunx_amd64
-      run: go build -ldflags '-linkmode "external" -extldflags "-static"' -o GodCloud_liunx_amd64 
-# go build -o server-static-link  -ldflags '-linkmode "external" -extldflags "-static"' .
+      run: go build -o GodCloud_liunx_amd64 
 
     - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
