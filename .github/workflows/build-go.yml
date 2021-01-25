@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     #runs-on: ${{ matrix.os }}
     #strategy:
     #  matrix:
@@ -23,24 +23,24 @@ jobs:
       with:
         go-version: 1.15
         
-    - name: dependences
-      run: |
-        sudo apt-get update
-        sudo apt-get install yasm gcc automake autoconf libtool make wget
+    #- name: dependences
+      #run: |
+        #sudo apt-get update
+        #sudo apt-get install yasm gcc automake autoconf libtool make wget
         
-    - name: compile FFmpeg
-      run: |
-        sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
-        tar -xzvf n4.3.1.tar.gz
-        cd FFmpeg-n4.3.1
-        sudo ./configure --prefix=$FFMPEG_HOME --enable-static
-        sudo make -j6
-        sudo make install
+ #   - name: compile FFmpeg
+ #     run: |
+ #       sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
+ #       tar -xzvf n4.3.1.tar.gz
+ #       cd FFmpeg-n4.3.1
+ #       sudo ./configure --prefix=$FFMPEG_HOME --enable-static
+ #       sudo make -j6
+ #       sudo make install
 
     - name: Build-liunx_amd64
       run: |
         go build -o GodCloud_liunx_amd64
-        strip -s GodCloud_liunx_amd64
+ #       strip -s GodCloud_liunx_amd64
         
     - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
