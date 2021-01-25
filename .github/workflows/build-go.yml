@@ -27,23 +27,24 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make wget
-        sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+        sudo apt install mingw-w64
+#        sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
         
     - name: compile FFmpeg
       run: |
         sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
         tar -xzvf n4.3.1.tar.gz
         cd FFmpeg-n4.3.1
-        sudo ./configure --prefix=$FFMPEG_HOME --enable-cross-compile --target-os=linux --cross-prefix=aarch64-linux-gnu- --cc=aarch64-linux-gnu-gcc --enable-static --arch=arm64
+        sudo ./configure --prefix=$FFMPEG_HOME --enable-cross-compile --target-os=windows --cross-prefix=x86_64-w64-mingw32- --cc=x86_64-w64-mingw32-gcc --enable-static --arch=amd64
         sudo make -j8
         sudo make install
 
-    - name: Build-liunx_amd64
+    - name: Build-windows_amd64
       run: |
-        GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ go build -o GodCloud_liunx_arm64
+        GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++  go build -o GodCloud_windows_amd64
         
-    - name: Upload binary files (liunx_amd64)
+    - name: Upload binary files (windows_amd64)
       uses: actions/upload-artifact@v2
       with:
         name: Build-liunx_amd64
-        path: GodCloud_liunx_arm64
+        path: GodCloud_windows_amd64
