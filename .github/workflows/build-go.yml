@@ -34,8 +34,8 @@ jobs:
         sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
         tar -xzvf n4.3.1.tar.gz
         cd FFmpeg-n4.3.1
-        sudo ./configure --prefix=../instal_arm64 --enable-cross-compile --target-os=linux --cross-prefix=aarch64-linux-gnu- --cc=aarch64-linux-gnu-gcc --enable-static --arch=arm64
-        sudo make -j6
+        sudo ./configure --prefix=$FFMPEG_HOME --enable-cross-compile --target-os=linux --cross-prefix=aarch64-linux-gnu- --cc=aarch64-linux-gnu-gcc --enable-static --arch=arm64
+        sudo make -j8
         sudo make install
 
     - name: Build-liunx_amd64
