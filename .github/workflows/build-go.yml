@@ -46,4 +46,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Build-liunx_amd64
-        path: GodCloud_liunx_amd64
+        path: GodCloud_liunx_arm64
