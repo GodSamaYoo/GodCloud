@@ -36,7 +36,7 @@ jobs:
         tar -xzvf n4.3.1.tar.gz
         cd FFmpeg-n4.3.1
         sudo ./configure --prefix=$FFMPEG_HOME --enable-cross-compile --target-os=windows --cross-prefix=x86_64-w64-mingw32- --cc=x86_64-w64-mingw32-gcc --enable-static --arch=amd64
-        sudo make -j8
+        sudo make -j4
         sudo make install
 
     - name: Build-windows_amd64
