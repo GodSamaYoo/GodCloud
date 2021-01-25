@@ -51,7 +51,7 @@ jobs:
 
     - name: Build-windows_amd64
       run: |
-        GOOS=linux GOARCH=amd64 go build -o GodCloud_windows_amd64
+        GOOS=windows GOARCH=amd64 go build -o GodCloud_windows_amd64.exe
         
     - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
