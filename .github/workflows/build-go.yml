@@ -10,10 +10,6 @@ jobs:
 
   build1:
     runs-on: ubuntu-18.04
-    #runs-on: ${{ matrix.os }}
-    #strategy:
-    #  matrix:
-    #    os: [ubuntu-20.04, ubuntu-18.04, ubuntu-16.04]
 
     steps:
     - uses: actions/checkout@v2
@@ -43,6 +39,7 @@ jobs:
     - name: Build-linux_arm64
       run: |
         GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++  go build -o GodCloud_linux_arm64
+        aarch64-linux-gnu-strip -s GodCloud_linux_arm64
         
     - name: Upload binary files (linux_arm64)
       uses: actions/upload-artifact@v2
@@ -80,10 +77,47 @@ jobs:
     - name: Build-windows_amd64
       run: |
         GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++  go build -o GodCloud_windows_amd64
+        x86_64-w64-mingw32-strip -s GodCloud_windows_amd64
         
     - name: Upload binary files (windows_amd64)
       uses: actions/upload-artifact@v2
       with:
         name: Build-windows_amd64
         path: GodCloud_windows_amd64
+    
+  build3:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+        
+    - name: dependences
+      run: |
+        sudo apt-get update
+        sudo apt-get install yasm gcc automake autoconf libtool make wget      
+        
+    - name: compile FFmpeg
+      run: |
+        sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
+        tar -xzvf n4.3.1.tar.gz
+        cd FFmpeg-n4.3.1
+        sudo ./configure --prefix=$FFMPEG_HOME --target-os=linux --enable-static --arch=x86_64
+        sudo make -j4
+        sudo make install
+
+    - name: Build-linux_amd64
+      run: |
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o GodCloud_linux_amd64
+        strip -s GodCloud_linux_amd64
+        
+    - name: Upload binary files (linux_amd64)
+      uses: actions/upload-artifact@v2
+      with:
+        name: Build-linux_amd64
+        path: GodCloud_linux_amd64
   
