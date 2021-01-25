@@ -41,7 +41,6 @@ jobs:
     - name: Build-liunx_amd64
       run: |
         GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ go build -o GodCloud_liunx_arm64
-        strip -s GodCloud_liunx_arm64
         
     - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
