@@ -2,14 +2,14 @@ name: Go
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
 
   build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     #runs-on: ${{ matrix.os }}
     #strategy:
     #  matrix:
@@ -27,20 +27,21 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make wget
+        sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
         
     - name: compile FFmpeg
       run: |
         sudo wget https://github.com/FFmpeg/FFmpeg/archive/n4.3.1.tar.gz
         tar -xzvf n4.3.1.tar.gz
         cd FFmpeg-n4.3.1
-        sudo ./configure --prefix=$FFMPEG_HOME --enable-static
+        sudo ./configure --prefix=../instal_arm64 --enable-cross-compile --target-os=linux --cross-prefix=aarch64-linux-gnu- --cc=aarch64-linux-gnu-gcc --enable-static --arch=arm64
         sudo make -j6
         sudo make install
 
     - name: Build-liunx_amd64
       run: |
-        go build -o GodCloud_liunx_amd64
-        strip -s GodCloud_liunx_amd64
+        GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ go build -o GodCloud_liunx_arm64
+        strip -s GodCloud_liunx_arm64
         
     - name: Upload binary files (liunx_amd64)
       uses: actions/upload-artifact@v2
