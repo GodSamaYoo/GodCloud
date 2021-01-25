@@ -1,4 +1,4 @@
-module github.com/GodSamaYoo/GodCloud/v1
+module github.com/GodSamaYoo/GodCloud/
 
 go 1.15
 

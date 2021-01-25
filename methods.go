@@ -3,10 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/mholt/archiver"
-	"gitlab.com/opennota/screengen"
-	"image"
-	"image/draw"
-	"image/jpeg"
 	"os"
 	"path/filepath"
 	"strings"
@@ -179,6 +175,9 @@ func AddChange(NetPath string, email string) string {
 	return SavePath
 }
 
+
+/* cgo编译存在问题
+
 //视频缩略图生成 100张合成1张
 
 func videothumbnail(videopath string, imgname string) {
@@ -194,3 +193,5 @@ func videothumbnail(videopath string, imgname string) {
 	defer imgfile.Close()
 	jpeg.Encode(imgfile, newImg, &jpeg.Options{100})
 }
+
+ */
