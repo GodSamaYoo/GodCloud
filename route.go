@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	path2 "path"
 	"strings"
 	"time"
 )
@@ -135,12 +134,13 @@ func RegisterRoutes(e *echo.Echo) {
 				tmp.DataPath = path
 				tmp.DataEmail = email
 
+				/*
 				video := []string{".wav", ".avi", ".mov", ".mp4", ".flv", ".rmvb", ".mpeg", ".mpg"}
 				for _,v := range video {
 					if v == path2.Ext(file.Filename) {
 						go videothumbnail(SavePath+file.Filename,DataFileId)
 					}
-				}
+				}*/
 				AddData(tmp)
 
 			}
