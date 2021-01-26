@@ -17,20 +17,24 @@ func main() {
 		db, err_ := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
 			SkipDefaultTransaction: true,
 		})
+
 		if err_ != nil {
-			panic("创建Sqlite数据库失败")
+			fmt.Println("创建Sqlite数据库失败")
 		}
-		db.Create(Users{
+		_ = db.AutoMigrate(&Users{})
+		_ = db.AutoMigrate(&Datas{})
+		_ = db.AutoMigrate(&Usergroups{})
+		db.Create(&Users{
 			UserID:   1,
 			Email:    "admin@godcloud.com",
 			Password: "123456",
 			GroupID:  1,
 			Volume:   1048576,
 		})
-		db.Create(Usergroups{
+		db.Create(&Usergroups{
 			GroupID: 1,
-			name:    "管理员",
-			volume:  1048576,
+			Name:    "管理员",
+			Volume:  1048576,
 		})
 		fmt.Println("用户名：admin@godcloud.com\n密码：123456")
 	}

@@ -21,9 +21,9 @@ type Datas struct {
 }
 
 type Usergroups struct {
-	GroupID int
-	name string
-	volume int
+	GroupID int `gorm:"primaryKey"`
+	Name string
+	Volume int
 }
 
 
