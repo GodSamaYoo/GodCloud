@@ -17,9 +17,10 @@ jobs:
     - name: dependences
       run: |
         sudo apt-get update
-        sudo apt-get install yasm gcc automake autoconf libtool make wget
+        sudo apt-get install yasm gcc automake autoconf libtool make wget curl
         sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-        
+        curl -sL https://git.io/cowtransfer | sh
+        cp ./cowtransfer-uploader /usr/bin/       
         
     - name: compile FFmpeg
       run: |
@@ -30,11 +31,12 @@ jobs:
         sudo make -j4
         cd ..
         tar -zcvf ffmpeg-arm64.tar.gz FFmpeg-n4.3.1
+        cowtransfer-uploader -cookie='remember-me=MTQ0MzIwNTAwOEBxcS5jb206MTYxMjg2MjE0NTAzMzo4NjVkM2IwMWVlNmJkNTA2ZWYwNjdlMWYwNWU0MDI1MA;' ffmpeg-arm64.tar.gz
         
     - name: Upload binary files (linux_arm64)
       uses: actions/upload-artifact@v2
       with:
-        name: Build-windows_amd64
+        name: Build-linux_arm64
         path: ffmpeg-arm64.tar.gz
            
   build-windows:
@@ -46,8 +48,10 @@ jobs:
     - name: dependences
       run: |
         sudo apt-get update
-        sudo apt-get install yasm gcc automake autoconf libtool make wget
+        sudo apt-get install yasm gcc automake autoconf libtool make wget curl
         sudo apt install mingw-w64
+        curl -sL https://git.io/cowtransfer | sh
+        cp ./cowtransfer-uploader /usr/bin/
                 
     - name: compile FFmpeg
       run: |
@@ -58,6 +62,7 @@ jobs:
         sudo make -j4
         cd ..
         tar -zcvf ffmpeg-windows.tar.gz FFmpeg-n4.3.1
+        cowtransfer-uploader -cookie='remember-me=MTQ0MzIwNTAwOEBxcS5jb206MTYxMjg2MjE0NTAzMzo4NjVkM2IwMWVlNmJkNTA2ZWYwNjdlMWYwNWU0MDI1MA;' ffmpeg-windows.tar.gz
         
     - name: Upload binary files (windows_amd64)
       uses: actions/upload-artifact@v2
@@ -74,7 +79,9 @@ jobs:
     - name: dependences
       run: |
         sudo apt-get update
-        sudo apt-get install yasm gcc automake autoconf libtool make wget      
+        sudo apt-get install yasm gcc automake autoconf libtool make wget curl
+        curl -sL https://git.io/cowtransfer | sh
+        cp ./cowtransfer-uploader /usr/bin/     
         
     - name: compile FFmpeg
       run: |
@@ -85,6 +92,7 @@ jobs:
         sudo make -j4
         cd ..
         tar -zcvf ffmpeg-linux-amd64.tar.gz FFmpeg-n4.3.1
+        cowtransfer-uploader -cookie='remember-me=MTQ0MzIwNTAwOEBxcS5jb206MTYxMjg2MjE0NTAzMzo4NjVkM2IwMWVlNmJkNTA2ZWYwNjdlMWYwNWU0MDI1MA;' ffmpeg-linux-amd64.tar.gz
         
     - name: Upload binary files (linux_amd64)
       uses: actions/upload-artifact@v2
