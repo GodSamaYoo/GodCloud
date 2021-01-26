@@ -19,8 +19,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make wget curl
         sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-        curl -sL https://git.io/cowtransfer | sh
-        cp ./cowtransfer-uploader /usr/bin/       
+        sudo curl -sL https://git.io/cowtransfer | sh
+        sudo cp ./cowtransfer-uploader /usr/bin/       
         
     - name: compile FFmpeg
       run: |
@@ -50,8 +50,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make wget curl
         sudo apt install mingw-w64
-        curl -sL https://git.io/cowtransfer | sh
-        cp ./cowtransfer-uploader /usr/bin/
+        sudo curl -sL https://git.io/cowtransfer | sh
+        sudo cp ./cowtransfer-uploader /usr/bin/
                 
     - name: compile FFmpeg
       run: |
@@ -80,8 +80,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install yasm gcc automake autoconf libtool make wget curl
-        curl -sL https://git.io/cowtransfer | sh
-        cp ./cowtransfer-uploader /usr/bin/     
+        sudo curl -sL https://git.io/cowtransfer | sh
+        sudo cp ./cowtransfer-uploader /usr/bin/     
         
     - name: compile FFmpeg
       run: |
