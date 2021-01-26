@@ -1,13 +1,40 @@
 package main
 
+//数据库模型
+type Users struct {
+	UserID int `gorm:"primaryKey"`
+	Email string
+	Password string
+	GroupID int
+	Volume int
+	Time int `gorm:"autoCreateTime"`
+}
+
+type Datas struct {
+	FileID string `gorm:"primaryKey"`
+	Name string
+	Type string
+	Time int `gorm:"autoCreateTime;autoUpdateTime"`
+	Path string
+	UserEmail string `gorm:"index"`
+	Size int
+}
+
+type Usergroups struct {
+	GroupID int
+	name string
+	volume int
+}
+
+
+//接口模型
 type PathData struct {
 	DataFileId string
 	DataName string
 	DataType string
-	DataTime string
+	DataTime int
 	DataPath string
 	DataSize int
-	DataEmail string
 }
 
 type UserInfo struct {

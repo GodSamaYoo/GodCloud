@@ -23,7 +23,7 @@ func UpdateFiles(tmp *UpdateType) {
 
 //删除文件（本机）
 func DeleteFiles(files *DeleteFile) string {
-	email := "123456@qq.com"
+	email := "admin@godcloud.com"
 	var DeletePath string
 	path := files.Path
 	if path == "/" {
@@ -97,7 +97,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 
 	}
 	i := 0
-	email := "123456@qq.com"
+	email := "admin@godcloud.com"
 	_ = filepath.Walk("./"+TmpPath, func(path string, info os.FileInfo, err error) error {
 		if i != 0 {
 			lens := len("./" + TmpPath)
@@ -118,10 +118,8 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 					}
 				}
 				_ = os.Mkdir(SavePath+"/"+info.Name(), 777)
-				dir.DataEmail = email
 				dir.DataType = "dir"
 				dir.DataFileId = md5_(info.Name() + dir.DataPath + string(time.Now().Unix()))
-				dir.DataTime = time.Now().Format("2006-01-02 15:04:05")
 				dir.DataName = info.Name()
 				AddData(dir)
 			} else {
@@ -143,10 +141,8 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 					fmt.Println(err)
 					return err
 				}
-				dir.DataEmail = email
 				dir.DataType = "file"
 				dir.DataFileId = md5_(info.Name() + dir.DataPath + string(time.Now().Unix()))
-				dir.DataTime = time.Now().Format("2006-01-02 15:04:05")
 				dir.DataName = info.Name()
 				dir.DataSize = int(info.Size() / 1024)
 				AddData(dir)
