@@ -37,7 +37,7 @@ jobs:
         
     - name: Build-liunx_arm
       run: |
-        GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc  CXX=arm-linux-gnueabihf-g++ go build -o GodCloud_liunx_arm 
+        GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc  CXX=arm-linux-gnueabihf-g++ go build -o GodCloud_liunx_arm 
         arm-linux-gnueabihf-strip -s GodCloud_liunx_arm
 
     - name: Build-windows_amd64
