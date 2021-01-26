@@ -4,3 +4,5 @@
 thumbnail/
 *.db
 test
+public/
+*.ini
