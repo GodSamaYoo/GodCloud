@@ -9,10 +9,7 @@ on:
 jobs:
 
   build-arm64:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-18.04,ubuntu-16.04]
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -40,11 +37,9 @@ jobs:
         name: Build-windows_amd64
         path: ffmpeg-arm64.tar.gz
            
-  build2:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-18.04,ubuntu-16.04]
+  build-windows:
+    runs-on: ubuntu-20.04
+
     steps:
     - uses: actions/checkout@v2
         
@@ -70,11 +65,8 @@ jobs:
         name: Build-windows_amd64
         path: ffmpeg-windows.tar.gz
     
-  build3:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-18.04,ubuntu-16.04]
+  build-linux:
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
