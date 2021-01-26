@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/mholt/archiver"
+	"gitlab.com/opennota/screengen"
+	"image"
+	"image/draw"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"strings"
@@ -172,7 +176,7 @@ func AddChange(NetPath string, email string) string {
 }
 
 
- cgo编译存在问题
+ //cgo编译存在问题
 
 //视频缩略图生成 100张合成1张
 
