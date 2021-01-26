@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/labstack/echo"
 	"github.com/mholt/archiver"
+	"github.com/zyxar/argo/rpc"
+	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,14 +80,14 @@ func MoveFiles(tmp *MoveStruct) string {
 
 //解压缩
 func UnArchiver(tmp *UnArchiveFile) bool {
-	TmpPath := md5_(string(time.Now().Unix()))
+	TmpPath := md5_(time.Now().String())
 	path := root + tmp.Email + tmp.Path
 	if tmp.Path == "/" {
 		path += tmp.FileName
 	} else {
 		path += "/" + tmp.FileName
 	}
-	os.Mkdir("./"+TmpPath, 777)
+	_ = os.Mkdir("./"+TmpPath, 777)
 	if tmp.PassWord == "" {
 		err := archiver.Unarchive(path, "./"+TmpPath)
 		if err != nil {
@@ -93,7 +98,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 	} else {
 		a := archiver.NewRar()
 		a.Password = tmp.PassWord
-		a.Unarchive(path, "./"+TmpPath)
+		_ = a.Unarchive(path, "./"+TmpPath)
 
 	}
 	i := 0
@@ -119,7 +124,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 				}
 				_ = os.Mkdir(SavePath+"/"+info.Name(), 777)
 				dir.DataType = "dir"
-				dir.DataFileId = md5_(info.Name() + dir.DataPath + string(time.Now().Unix()))
+				dir.DataFileId = md5_(info.Name() + dir.DataPath + time.Now().String())
 				dir.DataName = info.Name()
 				AddData(dir)
 			} else {
@@ -142,7 +147,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 					return err
 				}
 				dir.DataType = "file"
-				dir.DataFileId = md5_(info.Name() + dir.DataPath + string(time.Now().Unix()))
+				dir.DataFileId = md5_(info.Name() + dir.DataPath + time.Now().String())
 				dir.DataName = info.Name()
 				dir.DataSize = int(info.Size() / 1024)
 				AddData(dir)
@@ -171,6 +176,136 @@ func AddChange(NetPath string, email string) string {
 	return SavePath
 }
 
+//文件上传  文件夹创建处理
+
+func FileUploadAndCreate(ctx echo.Context) error {
+	form, _ := ctx.MultipartForm()
+	path := ctx.FormValue("path")
+	path, _ = url.QueryUnescape(path)
+	files := form.File["file"]
+	email := "admin@godcloud.com"
+	var SavePath string
+
+	if path == "/" {
+		SavePath = root + email + "/"
+	} else {
+		SavePath = root + email + path + "/"
+	}
+	_ = os.Mkdir(SavePath, 0777)
+
+	if form.File["file"] == nil {
+		var tmp PathData
+		NameList := strings.Split(ctx.FormValue("name"), "/")
+		for i, name_ := range NameList {
+			name := strings.TrimSpace(name_)
+			if name == "." || name == "" {
+				continue
+			}
+			tmp.DataName = name_
+			tmp.DataPath = path
+			tmp.DataType = "dir"
+			tmp.DataFileId = md5_(name_ + path + time.Now().String())
+			for _, name__ := range NameList[0:i] {
+				if tmp.DataPath == "/" {
+					if name__ == "." {
+						continue
+					}
+					tmp.DataPath = ""
+				}
+				if name__ == "." {
+					continue
+				}
+				tmp.DataPath += "/" + name__
+			}
+			if tmp.DataPath == "/" {
+				SavePath = root + email + "/" + name_
+			} else {
+				SavePath = root + email + tmp.DataPath + "/" + name_
+			}
+			_ = os.Mkdir(SavePath, 0777)
+			AddData(tmp)
+		}
+	} else {
+		for _, file := range files {
+			// Source
+			src, err := file.Open()
+			if err != nil {
+				return err
+			}
+
+			// Destination
+			dst, err := os.Create(SavePath + file.Filename)
+			if err != nil {
+				return err
+			}
+
+			// Copy
+			if _, err = io.Copy(dst, src); err != nil {
+				return err
+			}
+
+			DataFileId := md5_(file.Filename + path + time.Now().String())
+
+			var tmp PathData
+			tmp.DataSize = int(file.Size / 1024)
+			tmp.DataName = file.Filename
+			tmp.DataFileId = DataFileId
+			tmp.DataType = "file"
+			tmp.DataPath = path
+
+			/*
+				video := []string{".wav", ".avi", ".mov", ".mp4", ".flv", ".rmvb", ".mpeg", ".mpg"}
+				for _,v := range video {
+					if v == path2.Ext(file.Filename) {
+						go videothumbnail(SavePath+file.Filename,DataFileId)
+					}
+				}*/
+
+			err = src.Close()
+			err = dst.Close()
+			if err != nil {
+				return err
+			}
+			AddData(tmp)
+
+		}
+	}
+	return nil
+}
+
+//离线下载启动服务
+func aria2begin(aria2url string, aria2token string) rpc.Client {
+	ctx := context.Background()
+	var notifier rpc.Notifier
+	t, err := time.ParseDuration("9999h")
+	client, err := rpc.New(ctx, aria2url, aria2token, t, notifier)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return client
+}
+
+//离线下载
+
+func aria2download(url []string) []string {
+	var gids []string
+	for _, v := range url {
+		var url_ string
+		var gid string
+		if len(v) == 40 && !strings.Contains(v, ".") {
+			url_ = "magnet:?xt=urn:btih:" + v
+			gid, _ = aria2client.AddTorrent(url_)
+		} else if strings.Contains(strings.ToLower(v), "magnet:?xt=urn:btih:") {
+			url_ = v
+			gid, _ = aria2client.AddTorrent(url_)
+		} else {
+			gid, _ = aria2client.AddURI([]string{v})
+		}
+		gids = append(gids, gid)
+	}
+	return gids
+}
 
 /* cgo编译存在问题
 
@@ -190,4 +325,4 @@ func videothumbnail(videopath string, imgname string) {
 	jpeg.Encode(imgfile, newImg, &jpeg.Options{100})
 }
 
- */
+*/
