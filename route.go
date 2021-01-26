@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	path2 "path"
 	"strings"
 	"time"
 )
@@ -26,7 +25,7 @@ func RegisterRoutes(e *echo.Echo) {
 		} else {
 			email = cookie_.Value
 		}*/
-		email := "123456@qq.com"
+		email := "admin@godcloud.com"
 		return ctx.JSON(http.StatusOK,GetData(email,path))
 	})
 
@@ -35,7 +34,7 @@ func RegisterRoutes(e *echo.Echo) {
 	e.GET("/api/file/:filename/:base64path", func(ctx echo.Context) error {
 		filename,_ := url.QueryUnescape(ctx.Param("filename"))
 		base64path := ctx.Param("base64path")
-		email := "123456@qq.com"
+		email := "admin@godcloud.com"
 		path,_ := base64.StdEncoding.DecodeString(base64path)
 
 		if string(path)=="/"{
@@ -51,7 +50,7 @@ func RegisterRoutes(e *echo.Echo) {
 
 		path := ctx.FormValue("path")
 		path,_ = url.QueryUnescape(path)
-		email := "123456@qq.com"
+		email := "admin@godcloud.com"
 		if err != nil {
 			return err
 		}
@@ -76,11 +75,9 @@ func RegisterRoutes(e *echo.Echo) {
 					continue
 				}
 				tmp.DataName = name_
-				tmp.DataTime = time.Now().Format("2006-01-02 15:04:05")
 				tmp.DataPath = path
-				tmp.DataEmail = email
 				tmp.DataType = "dir"
-				tmp.DataFileId = md5_(name_+path+string(time.Now().Unix()))
+				tmp.DataFileId = md5_(name_+path+time.Now().String())
 				for _,name__ := range NameList[0:i] {
 					if tmp.DataPath == "/" {
 						if name__ == "." {
@@ -129,12 +126,11 @@ func RegisterRoutes(e *echo.Echo) {
 				var tmp PathData
 				tmp.DataSize = int(file.Size/1024)
 				tmp.DataName = file.Filename
-				tmp.DataTime = time.Now().Format("2006-01-02 15:04:05")
 				tmp.DataFileId = DataFileId
 				tmp.DataType = "file"
 				tmp.DataPath = path
-				tmp.DataEmail = email
 
+				
 				video := []string{".wav", ".avi", ".mov", ".mp4", ".flv", ".rmvb", ".mpeg", ".mpg"}
 				for _,v := range video {
 					if v == path2.Ext(file.Filename) {
@@ -166,7 +162,7 @@ func RegisterRoutes(e *echo.Echo) {
 	e.PUT("/api/move/", func(ctx echo.Context) error {
 		tmp := new(MoveStruct)
 		_ = ctx.Bind(tmp)
-		tmp.Email="123456@qq.com"
+		tmp.Email="admin@godcloud.com"
 		if MoveFiles(tmp) != "succeed" {
 			return ctx.JSON(200,"failed")
 		}
