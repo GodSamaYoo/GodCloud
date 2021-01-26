@@ -4,7 +4,37 @@ import (
 	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"os"
 )
+
+func CheckSqlite() {
+	_, err := os.Stat("data.db")
+	if err != nil {
+		db, err_ := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
+			SkipDefaultTransaction: true,
+		})
+
+		if err_ != nil {
+			fmt.Println("创建Sqlite数据库失败")
+		}
+		_ = db.AutoMigrate(&Users{})
+		_ = db.AutoMigrate(&Datas{})
+		_ = db.AutoMigrate(&Usergroups{})
+		db.Create(&Users{
+			UserID:   1,
+			Email:    "admin@godcloud.com",
+			Password: "49ba59abbe56e057",
+			GroupID:  1,
+			Volume:   1048576,
+		})
+		db.Create(&Usergroups{
+			GroupID: 1,
+			Name:    "管理员",
+			Volume:  1048576,
+		})
+		fmt.Println("用户名：admin@godcloud.com\n密码：123456")
+	}
+}
 
 func ConnectSqlite() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
@@ -103,7 +133,6 @@ func DeleteData(files *DeleteFile) {
 			path = files.Path + "/" + files.FileName + "%"
 		}
 		db.Delete(Datas{UserEmail: email}, "path LIKE ?", path)
-		fmt.Println(email + path)
 	}
 }
 

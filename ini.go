@@ -8,7 +8,7 @@ import (
 
 const IniPath = "./GodCloud.ini"
 
-func IniReadBegin() {
+func CheckIni() {
 	_, err := os.Stat(IniPath)
 	if err != nil || os.IsNotExist(err) {
 		CreateIni(IniPath)
@@ -16,6 +16,7 @@ func IniReadBegin() {
 		if cfg != nil {
 			_, _ = cfg.Section("filepath").NewKey("path", "./")
 			_, _ = cfg.Section("aria2").NewKey("enable", "no")
+			_, _ = cfg.Section("service").NewKey("port", "2020")
 			err = cfg.SaveTo(IniPath)
 		}
 	}
@@ -39,7 +40,7 @@ func CreateIni(path string) {
 }
 
 func ReadIni(Section string, Key string) string {
-	cfg := OpenIni("./config.ini")
+	cfg := OpenIni("./GodCloud.ini")
 	text := cfg.Section(Section).Key(Key).String()
 	return text
 }
