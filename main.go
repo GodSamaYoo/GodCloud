@@ -9,6 +9,8 @@ import (
 
 var root string
 var aria2client rpc.Client
+var option  map[string]string
+var deskey string
 
 func main() {
 	e := echo.New()
@@ -21,9 +23,12 @@ func main() {
 	root = ReadIni("filepath", "path")
 	ServicePort := ReadIni("service", "port")
 	aria2enable := ReadIni("aria2", "enable")
+	deskey = ReadIni("Des","key")
 	if aria2enable == "yes" {
 		aria2url := ReadIni("aria2", "url")
 		aria2token := ReadIni("aria2", "token")
+		/*dir,_ := os.Getwd()
+		option["dir"] = dir+"/tmp"*/
 		aria2client = aria2begin(aria2url, aria2token)
 	}
 	e.HideBanner = true

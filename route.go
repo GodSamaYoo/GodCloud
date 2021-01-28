@@ -14,14 +14,11 @@ func RegisterRoutes(e *echo.Echo) {
 
 	e.GET("/api/file/:path", func(ctx echo.Context) error {
 		path, _ := url.QueryUnescape(ctx.Param("path"))
-		/*cookie_, err := ctx.Cookie("email")
-		var email string
+		enkey,err := ctx.Cookie("GODKEY")
 		if err != nil {
 			return err
-		} else {
-			email = cookie_.Value
-		}*/
-		email := "admin@godcloud.com"
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
 		return ctx.JSON(http.StatusOK, GetData(email, path))
 	})
 
@@ -30,9 +27,12 @@ func RegisterRoutes(e *echo.Echo) {
 	e.GET("/api/file/:filename/:base64path", func(ctx echo.Context) error {
 		filename, _ := url.QueryUnescape(ctx.Param("filename"))
 		base64path := ctx.Param("base64path")
-		email := "admin@godcloud.com"
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
 		path, _ := base64.StdEncoding.DecodeString(base64path)
-
 		if string(path) == "/" {
 			return ctx.Attachment(root+email+"/"+filename, filename)
 		}
@@ -68,7 +68,12 @@ func RegisterRoutes(e *echo.Echo) {
 	e.PUT("/api/move/", func(ctx echo.Context) error {
 		tmp := new(MoveStruct)
 		_ = ctx.Bind(tmp)
-		tmp.Email = "admin@godcloud.com"
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
+		tmp.Email = email
 		if MoveFiles(tmp) != "succeed" {
 			return ctx.JSON(200, "failed")
 		}
@@ -82,8 +87,13 @@ func RegisterRoutes(e *echo.Echo) {
 	e.DELETE("/api/file/", func(ctx echo.Context) error {
 		tmp := new(DeleteFile)
 		_ = ctx.Bind(tmp)
-		if DeleteFiles(tmp) == "succeed" {
-			DeleteData(tmp)
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
+		if DeleteFiles(tmp,email) == "succeed" {
+			DeleteData(tmp,email)
 			return ctx.JSON(200, "succeed")
 		}
 		return ctx.JSON(200, "failed")
@@ -91,13 +101,17 @@ func RegisterRoutes(e *echo.Echo) {
 
 	//用户登录
 
-	e.GET("/api/login/:email/:pw", func(ctx echo.Context) error {
-		email := ctx.Param("email")
-		pw := ctx.Param("pw")
+	e.POST("/api/login", func(ctx echo.Context) error {
+		email := ctx.FormValue("email")
+		pw := ctx.FormValue("pw")
 		user, status := GetUserInfo(email, pw)
 		if status == 0 {
 			return ctx.JSON(http.StatusOK, "failed")
 		}
+		cookie := new (http.Cookie)
+		cookie.Name = "GODKEY"
+		cookie.Value,_ = DesEncrypt(email,deskey)
+		ctx.SetCookie(cookie)
 		return ctx.JSON(http.StatusOK, user)
 	})
 
@@ -106,10 +120,59 @@ func RegisterRoutes(e *echo.Echo) {
 	e.PUT("/api/UnArchive", func(ctx echo.Context) error {
 		tmp := new(UnArchiveFile)
 		_ = ctx.Bind(tmp)
-		if !UnArchiver(tmp) {
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
+		if !UnArchiver(tmp,email) {
 			return ctx.JSON(200, "failed")
 		}
 		return ctx.JSON(200, "succeed")
 	})
+
+
+	//添加aria2下载
+	e.POST("/api/aria2", func(ctx echo.Context) error {
+		tmp := new(aria2accepturl)
+		_ = ctx.Bind(tmp)
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
+		aria2download(tmp.Url,tmp.Path,email)
+		return ctx.JSON(200,"succeed")
+	})
+
+	//获取aria2下载状态
+	e.GET("/api/aria2/", func(ctx echo.Context) error {
+		//
+		//ctx.Cookie("")
+		enkey,err := ctx.Cookie("GODKEY")
+		if err != nil {
+			return err
+		}
+		email,_ := DesDecrypt(enkey.Value,deskey)
+		task := Aria2DataInfo(email)
+		var infos []aria2downloadinfo
+		for _,v := range task {
+			totalinfo,_ := aria2client.TellStatus(v.Gid)
+			var info aria2downloadinfo
+			info.TotalLength = totalinfo.TotalLength
+			info.FileNums = len(totalinfo.Files)
+			info.DownloadSpeed = totalinfo.DownloadSpeed
+			info.Status = totalinfo.Status
+			info.CompletedLength = totalinfo.CompletedLength
+			info.BeginTime = v.Time
+			info.Path = v.Path
+			infos = append(infos, info)
+		}
+
+		return ctx.JSON(200,infos)
+	})
+
+
+	//修改aria2下载状态
 
 }

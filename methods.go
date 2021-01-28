@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/labstack/echo"
 	"github.com/mholt/archiver"
-	"github.com/zyxar/argo/rpc"
 	"io"
 	"net/url"
 	"os"
@@ -27,8 +25,7 @@ func UpdateFiles(tmp *UpdateType) {
 }
 
 //删除文件（本机）
-func DeleteFiles(files *DeleteFile) string {
-	email := "admin@godcloud.com"
+func DeleteFiles(files *DeleteFile,email string) string {
 	var DeletePath string
 	path := files.Path
 	if path == "/" {
@@ -79,7 +76,7 @@ func MoveFiles(tmp *MoveStruct) string {
 }
 
 //解压缩
-func UnArchiver(tmp *UnArchiveFile) bool {
+func UnArchiver(tmp *UnArchiveFile,email string) bool {
 	TmpPath := md5_(time.Now().String())
 	path := root + tmp.Email + tmp.Path
 	if tmp.Path == "/" {
@@ -102,7 +99,6 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 
 	}
 	i := 0
-	email := "admin@godcloud.com"
 	_ = filepath.Walk("./"+TmpPath, func(path string, info os.FileInfo, err error) error {
 		if i != 0 {
 			lens := len("./" + TmpPath)
@@ -126,7 +122,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 				dir.DataType = "dir"
 				dir.DataFileId = md5_(info.Name() + dir.DataPath + time.Now().String())
 				dir.DataName = info.Name()
-				AddData(dir)
+				AddData(dir,email)
 			} else {
 				dir.DataPath = tmp.NewPath
 				if len(PathSlice) != 1 {
@@ -150,7 +146,7 @@ func UnArchiver(tmp *UnArchiveFile) bool {
 				dir.DataFileId = md5_(info.Name() + dir.DataPath + time.Now().String())
 				dir.DataName = info.Name()
 				dir.DataSize = int(info.Size() / 1024)
-				AddData(dir)
+				AddData(dir,email)
 			}
 		}
 		i++
@@ -183,7 +179,11 @@ func FileUploadAndCreate(ctx echo.Context) error {
 	path := ctx.FormValue("path")
 	path, _ = url.QueryUnescape(path)
 	files := form.File["file"]
-	email := "admin@godcloud.com"
+	enkey,err := ctx.Cookie("GODKEY")
+	if err != nil {
+		return err
+	}
+	email,_ := DesDecrypt(enkey.Value,deskey)
 	var SavePath string
 
 	if path == "/" {
@@ -223,7 +223,7 @@ func FileUploadAndCreate(ctx echo.Context) error {
 				SavePath = root + email + tmp.DataPath + "/" + name_
 			}
 			_ = os.Mkdir(SavePath, 0777)
-			AddData(tmp)
+			AddData(tmp,email)
 		}
 	} else {
 		for _, file := range files {
@@ -266,46 +266,15 @@ func FileUploadAndCreate(ctx echo.Context) error {
 			if err != nil {
 				return err
 			}
-			AddData(tmp)
+			AddData(tmp,email)
 
 		}
 	}
 	return nil
 }
 
-//离线下载启动服务
-func aria2begin(aria2url string, aria2token string) rpc.Client {
-	ctx := context.Background()
-	var notifier rpc.Notifier
-	t, err := time.ParseDuration("9999h")
-	client, err := rpc.New(ctx, aria2url, aria2token, t, notifier)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	return client
-}
 
-//离线下载
 
-func aria2download(url []string) []string {
-	var gids []string
-	for _, v := range url {
-		var url_ string
-		var gid string
-		if len(v) == 40 && !strings.Contains(v, ".") {
-			url_ = "magnet:?xt=urn:btih:" + v
-			gid, _ = aria2client.AddTorrent(url_)
-		} else if strings.Contains(strings.ToLower(v), "magnet:?xt=urn:btih:") {
-			url_ = v
-			gid, _ = aria2client.AddTorrent(url_)
-		} else {
-			gid, _ = aria2client.AddURI([]string{v})
-		}
-		gids = append(gids, gid)
-	}
-	return gids
-}
 
 /* cgo编译存在问题
 

@@ -20,6 +20,7 @@ func CheckSqlite() {
 		_ = db.AutoMigrate(&Users{})
 		_ = db.AutoMigrate(&Datas{})
 		_ = db.AutoMigrate(&Usergroups{})
+		_ = db.AutoMigrate(&Task{})
 		db.Create(&Users{
 			UserID:   1,
 			Email:    "admin@godcloud.com",
@@ -82,8 +83,7 @@ func GetUserInfo(email string, pw string) (UserInfo, int) {
 }
 
 //创建新的文件信息
-func AddData(Data_ PathData) {
-	email := "admin@godcloud.com"
+func AddData(Data_ PathData,email string) {
 	db := ConnectSqlite()
 	db.Create(&Datas{
 		FileID:    Data_.DataFileId,
@@ -121,8 +121,7 @@ func UpdateFile(tmp *UpdateType) string {
 }
 
 //删除文件 文件夹
-func DeleteData(files *DeleteFile) {
-	email := "admin@godcloud.com"
+func DeleteData(files *DeleteFile,email string) {
 	db := ConnectSqlite()
 	db.Delete(&Datas{FileID: files.FileID})
 	if files.Type == "dir" {
@@ -152,4 +151,20 @@ func MoveData(tmp *MoveStruct) string {
 	db.Model(&Datas{}).Where("file_id = ?", tmp.FileID).Updates(Datas{Path: tmp.NewPath})
 
 	return "succeed"
+}
+
+//aria2创建下载相关信息
+
+func Aria2DataBegin(gid string,path string,email string)  {
+	db := ConnectSqlite()
+	db.Create(&Task{Gid: gid,Path: path,UserEmail:email})
+}
+
+//aria2查询信息
+
+func Aria2DataInfo(email string) []Task{
+	db := ConnectSqlite()
+	var task []Task
+	db.Where("user_email = ?",email).Find(&task)
+	return task
 }

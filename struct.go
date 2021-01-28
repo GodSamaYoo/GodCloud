@@ -1,6 +1,8 @@
 package main
 
 //数据库模型
+
+//用户模型
 type Users struct {
 	UserID int `gorm:"primaryKey"`
 	Email string
@@ -9,6 +11,8 @@ type Users struct {
 	Volume int
 	Time int `gorm:"autoCreateTime"`
 }
+
+//文件 文件夹 模型
 
 type Datas struct {
 	FileID string `gorm:"primaryKey"`
@@ -20,10 +24,20 @@ type Datas struct {
 	Size int
 }
 
+//用户组
+
 type Usergroups struct {
 	GroupID int `gorm:"primaryKey"`
 	Name string
 	Volume int
+}
+
+//下载任务模型
+type Task struct {
+	Gid string `gorm:"primaryKey"`
+	UserEmail string
+	Path string
+	Time int `gorm:"autoCreateTime;autoUpdateTime"`
 }
 
 
@@ -74,4 +88,19 @@ type UnArchiveFile struct {
 	NewPath string `json:"NewPath" form:"NewPath" query:"NewPath"`
 	PassWord string `json:"PassWord" form:"PassWord" query:"PassWord"`
 	Email string `json:"Email" form:"Email" query:"Email"`
+}
+
+type aria2accepturl struct {
+	Url  []string `json:"url" form:"url" query:"url"`
+	Path string   `json:"path" form:"path" query:"path"`
+}
+
+type aria2downloadinfo struct {
+	Status string
+	FileNums int
+	CompletedLength string
+	DownloadSpeed string
+	TotalLength string
+	BeginTime string
+	Path string
 }

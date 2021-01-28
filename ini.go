@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/ini.v1"
 	"os"
+	"time"
 )
 
 const IniPath = "./GodCloud.ini"
@@ -17,6 +18,7 @@ func CheckIni() {
 			_, _ = cfg.Section("filepath").NewKey("path", "./")
 			_, _ = cfg.Section("aria2").NewKey("enable", "no")
 			_, _ = cfg.Section("service").NewKey("port", "2020")
+			_, _ = cfg.Section("Des").NewKey("key", md5_(time.Now().String())[8:16])
 			err = cfg.SaveTo(IniPath)
 		}
 	}
