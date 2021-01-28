@@ -101,6 +101,6 @@ type aria2downloadinfo struct {
 	CompletedLength string
 	DownloadSpeed string
 	TotalLength string
-	BeginTime string
+	BeginTime int
 	Path string
 }
