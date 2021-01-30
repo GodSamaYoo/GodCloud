@@ -6,3 +6,4 @@ thumbnail/
 test
 public/
 *.ini
+tmp/

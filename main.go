@@ -5,12 +5,16 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zyxar/argo/rpc"
+	"gorm.io/gorm"
+	"os"
 )
 
 var root string
 var aria2client rpc.Client
 var option  map[string]string
 var deskey string
+var db gorm.DB
+var tmppath string
 
 func main() {
 	e := echo.New()
@@ -27,10 +31,17 @@ func main() {
 	if aria2enable == "yes" {
 		aria2url := ReadIni("aria2", "url")
 		aria2token := ReadIni("aria2", "token")
-		/*dir,_ := os.Getwd()
-		option["dir"] = dir+"/tmp"*/
+		var err error
+		tmppath,err = os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		}
+		tmppath += "\\tmp"
 		aria2client = aria2begin(aria2url, aria2token)
 	}
+
+
+
 	e.HideBanner = true
 	fmt.Print("\n   __________  ____     ________    ____  __  ______ \n  / ____/ __ \\/ __ \\   / ____/ /   / __ \\/ / / / __ \\\n / / __/ / / / / / /  / /   / /   / / / / / / / / / /\n/ /_/ / /_/ / /_/ /  / /___/ /___/ /_/ / /_/ / /_/ / \n\\____/\\____/_____/   \\____/_____/\\____/\\____/_____/  \n                                                     \n")
 	e.Logger.Fatal(e.Start(":" + ServicePort))

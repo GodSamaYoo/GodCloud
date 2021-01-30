@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/zyxar/argo/rpc"
+)
+
 //数据库模型
 
 //用户模型
@@ -38,6 +42,7 @@ type Task struct {
 	UserEmail string
 	Path string
 	Time int `gorm:"autoCreateTime;autoUpdateTime"`
+	TmpPath string
 }
 
 
@@ -96,6 +101,7 @@ type aria2accepturl struct {
 }
 
 type aria2downloadinfo struct {
+	Gid string
 	Status string
 	FileNums int
 	CompletedLength string
@@ -103,4 +109,10 @@ type aria2downloadinfo struct {
 	TotalLength string
 	BeginTime int
 	Path string
+	Files []rpc.FileInfo
+}
+
+type aria2change struct {
+	Gid string `json:"gid" form:"gid" query:"gid"`
+	Type int `json:"type" form:"type" query:"type"`
 }

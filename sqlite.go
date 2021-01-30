@@ -10,10 +10,10 @@ import (
 func CheckSqlite() {
 	_, err := os.Stat("data.db")
 	if err != nil {
-		db, err_ := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
+		dbs, err_ := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
 			SkipDefaultTransaction: true,
 		})
-
+		db = *dbs
 		if err_ != nil {
 			fmt.Println("创建Sqlite数据库失败")
 		}
@@ -34,21 +34,22 @@ func CheckSqlite() {
 			Volume:  1048576,
 		})
 		fmt.Println("用户名：admin@godcloud.com\n密码：123456")
+	}else {
+		ConnectSqlite()
 	}
 }
 
-func ConnectSqlite() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
+func ConnectSqlite() {
+	dbs, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic("连接Sqlite数据库失败")
 	}
-	return db
+	db = *dbs
 }
 
 func GetData(UserEmail string, Path string) (data_ []PathData) {
-	db := ConnectSqlite()
 	var data []Datas
 	db.Where(&Datas{UserEmail: UserEmail, Path: Path}).Find(&data)
 	for _, v := range data {
@@ -66,7 +67,6 @@ func GetData(UserEmail string, Path string) (data_ []PathData) {
 }
 
 func GetUserInfo(email string, pw string) (UserInfo, int) {
-	db := ConnectSqlite()
 	status := 0
 	var user Users
 	row := db.Where(&Users{Email: email, Password: pw}).Find(&user)
@@ -84,7 +84,6 @@ func GetUserInfo(email string, pw string) (UserInfo, int) {
 
 //创建新的文件信息
 func AddData(Data_ PathData,email string) {
-	db := ConnectSqlite()
 	db.Create(&Datas{
 		FileID:    Data_.DataFileId,
 		Name:      Data_.DataName,
@@ -97,8 +96,7 @@ func AddData(Data_ PathData,email string) {
 
 //重命名文件 文件夹
 func UpdateFile(tmp *UpdateType) string {
-	db := ConnectSqlite()
-	num := db.Where(&Datas{UserEmail: tmp.Email, Name: tmp.NewName, Type: tmp.Type}).Find(&Datas{}).RowsAffected
+	num := db.Where(&Datas{UserEmail: tmp.Email, Name: tmp.NewName, Type: tmp.Type, Path: tmp.Path}).Find(&Datas{}).RowsAffected
 	if num != 0 {
 		fmt.Println("同目录下存在相同的文件(夹)名")
 		return "failed"
@@ -112,7 +110,7 @@ func UpdateFile(tmp *UpdateType) string {
 			oldpath = tmp.Path + "/" + tmp.OldName + "%"
 			newpath = tmp.Path + "/" + tmp.NewName
 		}
-		db.Model(&Datas{}).Where("path LIKE ? AND user_email", oldpath, tmp.Email).Update("path", newpath)
+		db.Model(&Datas{}).Where("path LIKE ? AND user_email = ?", oldpath, tmp.Email).Update("path", newpath)
 	}
 	db.Model(&Datas{}).Where("file_id = ?", tmp.FileID).Updates(Datas{
 		Name: tmp.NewName,
@@ -122,7 +120,6 @@ func UpdateFile(tmp *UpdateType) string {
 
 //删除文件 文件夹
 func DeleteData(files *DeleteFile,email string) {
-	db := ConnectSqlite()
 	db.Delete(&Datas{FileID: files.FileID})
 	if files.Type == "dir" {
 		var path string
@@ -137,7 +134,6 @@ func DeleteData(files *DeleteFile,email string) {
 
 //移动文件 文件夹
 func MoveData(tmp *MoveStruct) string {
-	db := ConnectSqlite()
 	num := db.Where(&Datas{UserEmail: tmp.Email, Path: tmp.NewPath, Type: tmp.Type, Name: tmp.FileName}).RowsAffected
 	if num != 0 {
 		fmt.Println("目录下存在相同的文件")
@@ -155,16 +151,27 @@ func MoveData(tmp *MoveStruct) string {
 
 //aria2创建下载相关信息
 
-func Aria2DataBegin(gid string,path string,email string)  {
-	db := ConnectSqlite()
-	db.Create(&Task{Gid: gid,Path: path,UserEmail:email})
+func Aria2DataBegin(gid string,path string,email string,tmp string)  {
+	db.Create(&Task{Gid: gid,Path: path,UserEmail:email,TmpPath: tmp})
 }
 
 //aria2查询信息
 
+//通过邮件
 func Aria2DataInfo(email string) []Task{
-	db := ConnectSqlite()
 	var task []Task
 	db.Where("user_email = ?",email).Find(&task)
 	return task
+}
+//通过地址
+func Aria2DataByAdd(tmp string) Task{
+	var task Task
+	db.Where("tmp_path=?",tmp).Find(&task)
+	return task
+}
+
+//aria2删除任务
+
+func Aria2DeleteTask(tmp string)  {
+	db.Delete(&Task{},"tmp_path = ?",tmp)
 }

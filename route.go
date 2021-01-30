@@ -141,38 +141,32 @@ func RegisterRoutes(e *echo.Echo) {
 			return err
 		}
 		email,_ := DesDecrypt(enkey.Value,deskey)
-		aria2download(tmp.Url,tmp.Path,email)
-		return ctx.JSON(200,"succeed")
+		a := aria2download(tmp.Url,tmp.Path,email)
+		return ctx.JSON(200, len(a))
 	})
 
 	//获取aria2下载状态
-	e.GET("/api/aria2/", func(ctx echo.Context) error {
-		//
-		//ctx.Cookie("")
+	e.GET("/api/aria2", func(ctx echo.Context) error {
 		enkey,err := ctx.Cookie("GODKEY")
 		if err != nil {
 			return err
 		}
 		email,_ := DesDecrypt(enkey.Value,deskey)
-		task := Aria2DataInfo(email)
-		var infos []aria2downloadinfo
-		for _,v := range task {
-			totalinfo,_ := aria2client.TellStatus(v.Gid)
-			var info aria2downloadinfo
-			info.TotalLength = totalinfo.TotalLength
-			info.FileNums = len(totalinfo.Files)
-			info.DownloadSpeed = totalinfo.DownloadSpeed
-			info.Status = totalinfo.Status
-			info.CompletedLength = totalinfo.CompletedLength
-			info.BeginTime = v.Time
-			info.Path = v.Path
-			infos = append(infos, info)
-		}
+		infos := aria2status(email)
 
 		return ctx.JSON(200,infos)
 	})
 
 
 	//修改aria2下载状态
-
+	e.PUT("/api/aria2", func(ctx echo.Context) error {
+		tmp := new(aria2change)
+		_ = ctx.Bind(tmp)
+		err := aria2taskchange(tmp)
+		if err != nil {
+			fmt.Println(err)
+			return ctx.JSON(200,"failed")
+		}
+		return ctx.JSON(200,"succeed")
+	})
 }
