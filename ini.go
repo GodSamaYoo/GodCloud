@@ -46,3 +46,9 @@ func ReadIni(Section string, Key string) string {
 	text := cfg.Section(Section).Key(Key).String()
 	return text
 }
+
+func ModifyIni(Section, Key ,value string) {
+	cfg := OpenIni(IniPath)
+	cfg.Section(Section).Key(Key).SetValue(value)
+	_ = cfg.SaveTo(IniPath)
+}

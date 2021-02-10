@@ -4,13 +4,33 @@ import (
 	"context"
 	"fmt"
 	"github.com/zyxar/argo/rpc"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 )
 //下载服务启动
-func aria2begin(aria2url string, aria2token string) rpc.Client {
+func aria2begin() rpc.Client {
+	aria2enable := ReadIni("aria2", "enable")
+	if aria2enable == "no" {
+		return nil
+	}
+	var err error
+	if ReadIni("aria2","tmpdownpath") != "" {
+		tmppath = ReadIni("aria2","tmpdownpath")
+	} else {
+		tmppath,err = os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		}
+		tmppath += "\\tmp"
+	}
+	aria2token := ReadIni("aria2","token")
+	port := ReadIni("aria2","port")
+	aria2url := "http://127.0.0.1:"+port+"/jsonrpc"
 	ctx := context.Background()
 	var notifier rpc.Notifier = DummyNotifier{}
 	t, _ := time.ParseDuration("9999h")
@@ -32,47 +52,118 @@ func (DummyNotifier) OnDownloadComplete(events []rpc.Event) {
 		if len(infos.FollowedBy) == 0 {
 			a := strings.Split(infos.Files[0].Path,"/") [len(strings.Split(infos.Dir,"\\"))-1:len(strings.Split(infos.Dir,"\\"))+1]
 			tmp_ := Aria2DataByAdd(infos.Dir)
-			add := AddChange(tmp_.Path,tmp_.UserEmail)
-			_ = os.Mkdir(add,0777)
-			tmp := filepath.Join(a...)
-			_ = os.Rename(tmppath+"/"+tmp,add+a[1])
-			_ = os.RemoveAll(infos.Dir)
-			s,_ :=os.Stat(add+a[1])
-			if  s.IsDir() {
-				i := 0
-				_ = filepath.Walk(add+a[1], func(path string, info os.FileInfo, err error) error {
-					var dir PathData
-					if i==0 {
-						dir.DataPath = tmp_.Path
-					} else {
-						if tmp_.Path != "/" {
-							dir.DataPath = tmp_.Path +"/"+ filepath.ToSlash(filepath.Dir(path[len(add)-2:]))
+			if IsOneDriveStore(tmp_.UserEmail) {
+				for _,vv := range infos.Files {
+					s,_ := os.Stat(vv.Path)
+					ss := vv.Path[len(infos.Dir):]
+					ppath := path.Dir(ss)
+					if ppath != "/" && ppath != "."{
+						var pppath string
+						if tmp_.Path == "/" {
+							pppath = path.Dir(ppath)
 						} else {
-							dir.DataPath = tmp_.Path + filepath.ToSlash(filepath.Dir(path[len(add)-2:]))
+							if path.Dir(ppath) == "/"{
+								pppath = tmp_.Path
+							} else {
+								pppath = tmp_.Path + path.Dir(ppath)
+							}
+						}
+						t1 := PathData{
+							DataFileId: md5_(path.Base(ppath) + pppath + time.Now().String()),
+							DataName:   path.Base(ppath),
+							DataType:   "dir",
+							DataPath:   pppath,
+						}
+						AddData(t1,tmp_.UserEmail)
+					}
+					q := GetOneDriveAdd(tmp_.UserEmail,tmp_.Path,s.Name(),int(s.Size()))
+					itemid := Aria2OneDriveUp(infos.Files[0].Path,int(s.Size()),q.Address,q.StoreID)
+					picture := []string{"jpg", "jpeg", "bmp", "gif", "png", "tif"}
+					tp := path.Ext(s.Name())
+					url_ := ""
+					if tp != "" {
+						for _,v_ := range picture{
+							if tp[1:] == v_{
+								url_ = GetThumbnail(itemid,q.StoreID)
+								break
+							}
 						}
 					}
-					if info.IsDir() {
-						dir.DataType = "dir"
-					}else {
-						dir.DataType = "file"
-						dir.DataSize = int(info.Size()/1024)
+					fileid := md5_(s.Name() + tmp_.Path + time.Now().String())
+					if url_ != "" {
+						os.Mkdir("Thumbnail",0777)
+						file, _ := http.Get(url_)
+						defer file.Body.Close()
+						files,_ := ioutil.ReadAll(file.Body)
+						_ = ioutil.WriteFile("Thumbnail/"+fileid+".jpg", files, 0644)
 					}
-					dir.DataName = info.Name()
-					dir.DataFileId = md5_(s.Name() + dir.DataPath + time.Now().String())
-					AddData(dir,tmp_.UserEmail)
-					i++
-					return err
-				})
-			}else {
-				p := PathData{
-					DataFileId: md5_(s.Name() + tmp_.Path + time.Now().String()),
-					DataName:   s.Name(),
-					DataType:   "file",
-					DataPath:   tmp_.Path,
-					DataSize:   int(s.Size()/1024),
+					var jjj string
+					if tmp_.Path == "/" {
+						jjj = ppath
+					}else {
+						if ppath != "/" {
+							jjj = tmp_.Path +ppath
+						}else {
+							jjj = tmp_.Path
+						}
+					}
+					DatasAdd(&Datas{
+						FileID:    fileid,
+						Name:      s.Name(),
+						Type:      "file",
+						Path:      jjj,
+						UserEmail: tmp_.UserEmail,
+						Size:      int(s.Size()/1024),
+						StoreID:   q.StoreID,
+						ItemID:    itemid,
+					})
+					_ = os.RemoveAll(infos.Dir)
 				}
-				AddData(p,tmp_.UserEmail)
+			} else {
+				add := AddChange(tmp_.Path,tmp_.UserEmail)
+				_ = os.Mkdir(add,0777)
+				tmp := filepath.Join(a...)
+				_ = os.Rename(tmppath+"/"+tmp,add+a[1])
+				_ = os.RemoveAll(infos.Dir)
+				s,_ :=os.Stat(add+a[1])
+				if  s.IsDir() {
+					i := 0
+					_ = filepath.Walk(add+a[1], func(path string, info os.FileInfo, err error) error {
+						var dir PathData
+						if i==0 {
+							dir.DataPath = tmp_.Path
+						} else {
+							if tmp_.Path != "/" {
+								dir.DataPath = tmp_.Path +"/"+ filepath.ToSlash(filepath.Dir(path[len(add)-2:]))
+							} else {
+								dir.DataPath = tmp_.Path + filepath.ToSlash(filepath.Dir(path[len(add)-2:]))
+							}
+						}
+						if info.IsDir() {
+							dir.DataType = "dir"
+						}else {
+							dir.DataType = "file"
+							dir.DataSize = int(info.Size()/1024)
+						}
+						dir.DataName = info.Name()
+						dir.DataFileId = md5_(s.Name() + dir.DataPath + time.Now().String())
+						AddData(dir,tmp_.UserEmail)
+						i++
+						return err
+					})
+				}else {
+					p := PathData{
+						DataFileId: md5_(s.Name() + tmp_.Path + time.Now().String()),
+						DataName:   s.Name(),
+						DataType:   "file",
+						DataPath:   tmp_.Path,
+						DataSize:   int(s.Size()/1024),
+					}
+					AddData(p,tmp_.UserEmail)
+				}
 			}
+
+
 		}
 	}
 	fmt.Printf("%s completed.", events)

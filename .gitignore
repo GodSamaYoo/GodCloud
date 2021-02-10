@@ -2,6 +2,7 @@
 *.exe
 admin@godcloud.com/
 thumbnail/
+Thumbnail/
 *.db
 test
 public/

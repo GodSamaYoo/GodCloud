@@ -174,14 +174,14 @@ func AddChange(NetPath string, email string) string {
 
 //文件上传  文件夹创建处理
 
-func FileUploadAndCreate(ctx echo.Context) error {
+func FileUploadAndCreate(ctx echo.Context) bool {
 	form, _ := ctx.MultipartForm()
 	path := ctx.FormValue("path")
 	path, _ = url.QueryUnescape(path)
 	files := form.File["file"]
 	enkey,err := ctx.Cookie("GODKEY")
 	if err != nil {
-		return err
+		return false
 	}
 	email,_ := DesDecrypt(enkey.Value,deskey)
 	var SavePath string
@@ -222,26 +222,30 @@ func FileUploadAndCreate(ctx echo.Context) error {
 			} else {
 				SavePath = root + email + tmp.DataPath + "/" + name_
 			}
-			_ = os.Mkdir(SavePath, 0777)
-			AddData(tmp,email)
+			if AddData(tmp,email) {
+				_ = os.Mkdir(SavePath, 0777)
+			} else {
+				return false
+			}
+
 		}
 	} else {
 		for _, file := range files {
 			// Source
 			src, err := file.Open()
 			if err != nil {
-				return err
+				return false
 			}
 
 			// Destination
 			dst, err := os.Create(SavePath + file.Filename)
 			if err != nil {
-				return err
+				return false
 			}
 
 			// Copy
 			if _, err = io.Copy(dst, src); err != nil {
-				return err
+				return false
 			}
 
 			DataFileId := md5_(file.Filename + path + time.Now().String())
@@ -264,16 +268,34 @@ func FileUploadAndCreate(ctx echo.Context) error {
 			err = src.Close()
 			err = dst.Close()
 			if err != nil {
-				return err
+				return false
 			}
 			AddData(tmp,email)
-
 		}
 	}
-	return nil
+	return true
 }
 
-//本地文件转移
+//用户容量是否足够
+
+func UserVolumeIsOK(email string,Need int) bool {
+	a,_ := GetUserInfo(email)
+	if Need < (a.Volume - a.Used - 10240) {
+		return true
+	}
+	return false
+}
+
+//储存策略容量是否足够
+func StoreVolumeIsOK(id int,Need int) bool {
+	tmp := StoreInfoQuery(&Store{
+		ID: id,
+	})
+	if Need < (tmp.Volume - tmp.Used - 10240) {
+		return true
+	}
+	return false
+}
 
 
 
